@@ -7,14 +7,14 @@ const { User } = require("../../models");
 router.get("/", (req, res) => {
   // Access our User model and run .findAll() method)
   User.findAll({
-    //excludes the password from being returned
-  attributes: { exclude: ['password'] }
-})
-  .then(dbUserData => res.json(dbUserData))
-  .catch(err => {
-    console.log(err);
-    res.status(500).json(err);
-  });
+    attributes: { exclude: ["password"] },
+  })
+    .then((dbUserData) => res.json(dbUserData))
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+});
 /**
  the User model inherits functionality from the Sequelize Model class. .findAll() is one of the Model class's methods. The .findAll() method lets us query all of the users from the user table in the database, and is the JavaScript equivalent of the following SQL query: SELECT * FROM users;
 
@@ -25,23 +25,23 @@ router.get("/", (req, res) => {
 // GET /api/users/1
 router.get("/:id", (req, res) => {
   User.findOne({
-    //excludes the password from being returned
-  attributes: { exclude: ['password'] },
-  where: {
-    id: req.params.id
-  }
-})
-  .then(dbUserData => {
-    if (!dbUserData) {
-      res.status(404).json({ message: 'No user found with this id' });
-      return;
-    }
-    res.json(dbUserData);
+    attributes: { exclude: ["password"] },
+    where: {
+      id: req.params.id,
+    },
   })
-  .catch(err => {
-    console.log(err);
-    res.status(500).json(err);
-  });
+    .then((dbUserData) => {
+      if (!dbUserData) {
+        res.status(404).json({ message: "No user found with this id" });
+        return;
+      }
+      res.json(dbUserData);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json(err);
+    });
+});
 /**
  assing an argument into the .findOne() method, another great benefit of using Sequelize. Instead of writing a hefty SQL query, we can use JavaScript objects to help configure the query! 
  SQl = SELECT FROM users WHERE id = 1
@@ -80,7 +80,9 @@ router.put("/:id", (req, res) => {
   // expects {username: 'Lernantino', email: 'lernantino@gmail.com', password: 'password1234'}
 
   // if req.body has exact key/value pairs to match the model, you can just use `req.body` instead
+  // pass in req.body instead to only update what's passed through
   User.update(req.body, {
+    individualHooks: true, //updated to include hooks from user.js
     where: {
       id: req.params.id,
     },
