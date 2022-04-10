@@ -21,6 +21,8 @@ router.get("/", (req, res) => {
  Sequelize is a JavaScript Promise-based library, meaning we get to use .then() with all of the model methods!
  */
 
+//=========================================================================================================
+
 
 // GET /api/users/1
 router.get("/:id", (req, res) => {
@@ -49,6 +51,8 @@ router.get("/:id", (req, res) => {
  Because we're looking for one user, there's the possibility that we could accidentally search for a user with a nonexistent id value. Therefore, if the .then() method returns nothing from the query, we send a 404 status back to the client to indicate everything's okay and they just asked for the wrong piece of data.
  */
 
+//=========================================================================================================
+
 // POST /api/users
 router.post("/", (req, res) => {
   // expects {username: 'Lernantino', email: 'lernantino@gmail.com', password: 'password1234'}
@@ -71,6 +75,49 @@ INSERT INTO users
 VALUES
   ("Lernantino", "lernantino@gmail.com", "password1234");
  */
+
+//=========================================================================================================  
+
+//login route
+/**
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ IMPORTANT NOTE
+
+ In this case, a login route could've used the GET method since it doesn't actually create or insert anything into the database. But there is a reason why a POST is the standard for the login that's in process.
+
+A GET method carries the request parameter appended in the URL string, whereas a POST method carries the request parameter in req.body, which makes it a more secure way of transferring data from the client to the server. Remember, the password is still in plaintext, which makes this transmission process a vulnerable link in the chain.
+
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ */
+ // POST /api/users/login 
+router.post("/login", (req, res) => {
+  // expects {email: 'lernantino@gmail.com', password: 'password1234'}
+  User.findOne({
+    where: {
+      email: req.body.email,
+    },
+  }).then((dbUserData) => {
+    if (!dbUserData) {
+      res.status(400).json({ message: "No user with that email address!" });
+      return;
+    }
+  
+    const validPassword = dbUserData.checkPassword(req.body.password);
+    if (!validPassword) {
+      res.status(400).json({ message: "Incorrect password!" });
+      return;
+    }
+
+    res.json({ user: dbUserData, message: "You are now logged in!" });
+  });
+});
+/*
+Queried the User table using the findOne() method for the email entered by the user and assigned it to req.body.email.
+
+If the user with that email was not found, a message is sent back as a response to the client. However, if the email was found in the database, the next step will be to verify the user's identity by matching the password from the user and the hashed password in the database
+*/
+
+//=========================================================================================================
 
 /**
  To update existing data, use both req.body and req.params. Let's update the PUT route to look like the following code:
@@ -106,6 +153,8 @@ UPDATE users
 SET username = "Lernantino", email = "lernantino@gmail.com", password = "newPassword1234"
 WHERE id = 1;
  */
+
+//=========================================================================================================
 
 // DELETE /api/users/1
 router.delete("/:id", (req, res) => {
